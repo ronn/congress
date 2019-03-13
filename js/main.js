@@ -1,4 +1,4 @@
-const initMembersTable = (table, members) => document.getElementById(table).innerHTML = members
+const initMembersTable = (table, members) => getElementById(table).innerHTML = members
         .map(member => `<tr>
             <td><a href="${member.url}" target="_blank">${member.first_name} ${member.middle_name || ""} ${member.last_name}</a></td>
             <td>${member.party}</td>
@@ -8,8 +8,17 @@ const initMembersTable = (table, members) => document.getElementById(table).inne
         </tr>`
         ).join("")
 
+const buildDropDown = (element, members) => getElementById(element).innerHTML =
+    '<option value="">All</option>' +
+    members.map(member => member.state)
+        .filter((member, pos, states) => states.indexOf(member) === pos)
+        .map(state => `<option value="${state}">${state}</option>`)
+        .join("")
+
+const getElementById = id => document.getElementById(id)
+
 const buildCheckboxes = (element, members, chamber) =>
-    document.getElementById(element).innerHTML = members
+    getElementById(element).innerHTML = members
         .map(member => member.party)
         .filter((item, pos, self) => self.indexOf(item) === pos)
         .map(party => `<label>
@@ -30,6 +39,16 @@ const getMembersArray = chamber => chamber === "senate" ? senateMembers : houseM
 const getCheckedParties = () => Array.from(document.querySelectorAll('.party-checkbox:checked'))
     .map(checkBox => checkBox.value)
 
-const getFilteredMembers = members => getCheckedParties().length > 0
-        ? members.filter(member => getCheckedParties().includes(member.party))
-        : members
+const getFilteredMembers = members => members
+    .filter(filterByParty)
+    .filter(filterByState)
+
+const filterByParty = member => getCheckedParties().length > 0
+    ? getCheckedParties().includes(member.party)
+    : true
+
+filterByState = member => getSelectedState() !== ""
+    ? member.state === getSelectedState()
+    : true
+
+const getSelectedState = () => Array.from(document.getElementsByClassName("drop-down"))[0].value
